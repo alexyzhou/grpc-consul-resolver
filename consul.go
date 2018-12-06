@@ -3,10 +3,10 @@ package consul
 import (
 	"context"
 	"fmt"
+	"log"
 	"sort"
 
 	"github.com/hashicorp/consul/api"
-	"google.golang.org/grpc/grpclog"
 	"google.golang.org/grpc/resolver"
 )
 
@@ -48,12 +48,12 @@ func watchConsulService(ctx context.Context, s servicer, tgt target, out chan<- 
 					WaitTime:  tgt.Wait,
 				},
 			)
-			lastIndex = meta.LastIndex
 			if err != nil {
-				grpclog.Errorf("[Consul resolver] Couldn't fetch endpoints. target={%s}", tgt)
+				log.Errorf("[Consul resolver] Couldn't fetch endpoints. target={%s}", tgt)
 				continue
 			}
-			grpclog.Infof("[Consul resolver] %d endpoints fetched in(+wait) %s for target={%s}",
+			lastIndex = meta.LastIndex
+			log.Infof("[Consul resolver] %d endpoints fetched in(+wait) %s for target={%s}",
 				len(ss),
 				meta.RequestTime,
 				tgt,
@@ -95,7 +95,7 @@ func populateEndpoints(ctx context.Context, clientConn resolver.ClientConn, inpu
 			sort.Sort(byAddressString(conns)) // Don't replace the same address list in the balancer
 			clientConn.NewAddress(conns)
 		case <-ctx.Done():
-			grpclog.Info("[Consul resolver] Watch has been finished")
+			log.Info("[Consul resolver] Watch has been finished")
 			return
 		}
 	}
